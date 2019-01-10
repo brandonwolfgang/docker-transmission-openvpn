@@ -6,7 +6,7 @@ services:
     - NET_ADMIN
   devices:
     - /dev/net/tun
-  restart: always
+  restart: unless-stopped
   ports:
     - "9091:9091"
     - "8888:8888"
@@ -15,13 +15,37 @@ services:
     - 8.8.4.4
   volumes:
     - /etc/localtime:/etc/localtime:ro
-    - /your/storage/path/:/data
+    - ${USERDIR}/conf/openvpn/media-server.ovpn:/etc/openvpn/custom/default.ovpn
+    - ${USERDIR}/docker/transmission-vpn:/data
+    - ${USERDIR}/docker/shared:/shared
+    - ${USERDIR}/Downloads:/data/watch
+    - ${USERDIR}/Downloads/completed:/data/completed
+    - ${USERDIR}/Downloads/incomplete:/data/incomplete
   environment:
-    - OPENVPN_PROVIDER=PIA
-    - OPENVPN_USERNAME=username
-    - OPENVPN_PASSWORD=password
+    - LOCAL_NETWORK=172.18.0.0/16
     - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60
-    - LOCAL_NETWORK=192.168.0.0/24
+    - OPENVPN_PASSWORD=
+    - OPENVPN_PROVIDER=CUSTOM
+    - OPENVPN_USERNAME=
+    - PGID=${PGID}
+    - PUID=${PUID}
+    - TRANSMISSION_BLOCKLIST_ENABLED=true
+    - TRANSMISSION_BLOCKLIST_URL=http://john.bitsurge.net/public/biglist.p2p.gz
+    - TRANSMISSION_HOME=/config/transmission
+    - TRANSMISSION_INCOMPLETE_DIR=/data/incomplete
+    - TRANSMISSION_INCOMPLETE_DIR_ENABLED=true
+    - TRANSMISSION_RATIO_LIMIT=1.00
+    - TRANSMISSION_RATIO_LIMIT_ENABLED=true
+    - TRANSMISSION_RPC_AUTHENTICATION_REQUIRED=true
+    - TRANSMISSION_RPC_BIND_ADDRESS=*.*.*.*
+    - TRANSMISSION_RPC_ENABLED=true
+    - TRANSMISSION_RPC_PASSWORD=tr4n5m15510n!
+    - TRANSMISSION_RPC_USERNAME=transmission
+    - TRANSMISSION_SPEED_LIMIT_UP=150
+    - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
+    - TRANSMISSION_UMASK=002
+    - TRANSMISSION_WEB_UI=combustion
+    - TZ=${TZ}
  proxy:
   image: haugene/transmission-openvpn-proxy
   links:
@@ -31,9 +55,3 @@ services:
   volumes:
     - /etc/localtime:/etc/localtime:ro
 
- rss:
-  image: haugene/transmission-rss
-  links:
-    - transmission
-  environment:
-    - RSS_URL=http://.../xxxxx.rss
